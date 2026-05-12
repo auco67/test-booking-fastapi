@@ -19,13 +19,14 @@
 pip freeze > requirements.txt
 ```
 
-## SQLiteをPCにインストールする
+## 第一章
+### SQLiteをPCにインストールする
 1. [公式サイト](https://sqlite.org/download.html)からZIPファイルをダウンロードする
     `Precompiled Binaries for Windows`の`sqlite-tools-win-x64-3530100.zip`をダウンロードし、ZIP解凍後、`C:\Program Files\SQLite`直下にexeファイルを配置する
 2. 環境変数の`Path`に`C:\Program Files\SQLite`を登録する
 3. コマンドプロンプト起動し`sqlite3 --version`を実行し、問題なくバージョンが表示されればインストール完了！
 
-## FastAPI(モデル)作成
+### FastAPI(モデル)作成
 
 main.py
 ```
@@ -69,7 +70,7 @@ async def booking(booking: Booking):
     return { "booking": booking }
 ```
 
-## Streamlitでユーザー画面作成
+### Streamlitでユーザー画面作成
 
 app.py
 ```
@@ -170,7 +171,7 @@ elif choice == "予約":
         st.json(res.json())
 ```
 
-## 作成したFastAPIとStreamlitの画面を確認する
+### 作成したFastAPIとStreamlitの画面を確認する
 
 1. ターミナルでサーバーを起動する
     ```
@@ -202,7 +203,8 @@ elif choice == "予約":
     サブメニューから`予約`を選択し、予約人数に`3`を、日付に`2026/05/12`を、開始時刻に`10:00`を、終了時刻に`11:00`を入力し送信ボタンを押下すると、送信データとレスポンス結果（200）が表示されれば成功！
     ![images](imgs/booking.png)
 
-## データベースを構築する
+## 第二章
+### データベースを構築する
 
 1. データベースをSQLiteとする設定を用意する
 
