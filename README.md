@@ -1,7 +1,8 @@
 # 会議室予約システムAPI
 [FastAPI](https://fastapi.tiangolo.com/ja/)と[Streamit](https://streamlit.io/)のフレームワークを用いて簡易的なWebサイトの会議室予約システムを構築する
 
-## 必要なパッケージ
+## 環境構築
+### 必要なパッケージ
 - `FastAPI`
     ```
     pip install "fastapi[standard]"
@@ -14,18 +15,20 @@
     ```
     pip install sqlmodel
     ```
-インストールしたパッケージをファイルで管理する
-```
-pip freeze > requirements.txt
-```
+    
+    インストールしたパッケージをファイルで管理する
 
-## 第一章
+    ```
+    pip freeze > requirements.txt
+    ```
+
 ### SQLiteをPCにインストールする
 1. [公式サイト](https://sqlite.org/download.html)からZIPファイルをダウンロードする
     `Precompiled Binaries for Windows`の`sqlite-tools-win-x64-3530100.zip`をダウンロードし、ZIP解凍後、`C:\Program Files\SQLite`直下にexeファイルを配置する
 2. 環境変数の`Path`に`C:\Program Files\SQLite`を登録する
 3. コマンドプロンプト起動し`sqlite3 --version`を実行し、問題なくバージョンが表示されればインストール完了！
 
+## 第一章
 ### FastAPI(モデル)作成
 
 main.py
