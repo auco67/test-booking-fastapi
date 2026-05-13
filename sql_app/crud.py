@@ -49,14 +49,15 @@ def create_user(user: schemas.UserBaseModel, session: SessionDep) -> schemas.Use
     return schemas.User.from_orm(db_user)
 
 # 予約作成
-def create_booking(booking: Booking, session: SessionDep) -> Booking:
-    db_booking = Booking(
-        user_id=booking.user_id,
-        room_id=booking.room_id,
-        booked_num=booking.booked_num,
-        start_datetime=booking.start_datetime,
-        end_datetime=booking.end_datetime)
+def create_booking(booking: schemas.BookingBaseModel, session: SessionDep) -> schemas.Booking:
+    db_booking = Booking.model_validate({
+        "user_id":booking.user_id,
+        "room_id":booking.room_id,
+        "booked_num":booking.booked_num,
+        "start_datetime":booking.start_datetime,
+        "end_datetime":booking.end_datetime
+    })
     session.add(db_booking)
     session.commit()
     session.refresh(db_booking)
-    return db_booking
+    return schemas.Booking.from_orm(db_booking)
