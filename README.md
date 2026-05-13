@@ -860,3 +860,146 @@ elif choice == "予約":
 
     次の通り一覧が表示されたら成功！
     ![images](imgs/add_booking.png)
+
+    11. 会議室予約画面にバリデーションを設定する
+
+        バリデーションの条件は次の通り
+        - 定員を予約人数が超えた場合
+        - 開始時刻より終了時刻が早い場合
+        - 予約可能時間（9:00～20:00）を外れた場合
+        - 予約一覧と重複する場合
+
+        app.py
+        ```
+        import streamlit as st
+        import datetime
+        import requests
+        import pandas as pd
+
+        ~ (省略) ~
+
+        choice = st.sidebar.radio("選択", ["ユーザー","会議室","会議室予約"])
+
+        if choice == "ユーザー":
+
+            ~ (省略) ~
+
+        elif choice == "会議室":
+
+            ~ (省略) ~
+
+        elif choice == "会議室予約":
+
+            st.title("会議室予約画面")
+            st.dataframe(data=df_bookings)
+
+            with st.form(key="room"):
+                user_name: str = st.selectbox("予約者名",dt_users_name.keys())
+                room_name: str = st.selectbox("会議室名",dt_rooms_name.keys())
+                booked_num: int = st.number_input(label="予約人数",step=1, min_value=1)
+                date = st.date_input(label="日付", min_value=datetime.datetime.today())
+                start_time = st.time_input(label="開始時刻", value=datetime.time(hour=9,minute=0))
+                end_time = st.time_input(label="終了時刻", value=datetime.time(hour=20,minute=0))
+                submit_button = st.form_submit_button(label="送信")
+
+            # 送信ボタン押下時
+            if submit_button:
+                user_id: int = dt_users_name[user_name]
+                room_id: int = dt_rooms_name[room_name]["room_id"]
+                capacity: int = dt_rooms_name[room_name]["capacity"]
+                start_datetime = datetime.datetime(
+                    year=date.year,
+                    month=date.month,
+                    day=date.day,
+                    hour=start_time.hour,
+                    minute=start_time.minute
+                ).isoformat()
+                end_datetime = datetime.datetime(
+                    year=date.year,
+                    month=date.month,
+                    day=date.day,
+                    hour=end_time.hour,
+                    minute=end_time.minute
+                ).isoformat()
+
+                data = {
+                    "user_id": user_id,
+                    "room_id": room_id,
+                    "booked_num": booked_num,
+                    "start_datetime": start_datetime,
+                    "end_datetime": end_datetime
+                }
+
+                # 定員以上の予約人数の場合
+                if booked_num > capacity:
+                    st.error(f"{room_name}の定員{capacity}名以上では予約できません。")
+
+                # 開始時刻>=終了時刻の場合
+                elif start_time >= end_time:
+                    st.error("終了時刻より開始時刻を遅く設定することはできません")
+
+                # 予約可能時間（9:00～20:00）を外れた場合
+                elif start_time < datetime.time(hour=9, minute=0, second=0) or end_time > datetime.time(hour=20, minute=0, second=0):
+                    st.error("予約可能時間は9:00～20:00です")
+
+                else:
+                    # 会議室を予約する
+                    url = "http://127.0.0.1:8000/booking"
+                    res = requests.post(url, json=data)
+                    if res.status_code == 200:
+                        st.success("会議室予約登録完了")
+                    elif res.status_code == 404 and res.json()["detail"] == "Already booked.":
+                        st.error("指定の時間は既に予約がは存在します")
+        ```
+
+        sql_app\crud.py
+        ```
+        from typing import Annotated
+        from fastapi import Query, HTTPException
+        from .database import SessionDep
+        from .models import User, Room, Booking
+        from . import schemas
+        from sqlmodel import select
+
+        ~ (省略) ~
+
+        # 予約作成
+        def create_booking(booking: schemas.BookingBaseModel, session: SessionDep) -> schemas.Booking:
+
+            db_booked = session.exec(
+                select(Booking). \
+                filter(Booking.room_id == booking.room_id). \
+                filter(Booking.end_datetime > booking.start_datetime). \
+                filter(Booking.start_datetime < booking.end_datetime) \
+            ).all()
+            
+            if len(db_booked) == 0:
+                db_booking = Booking.model_validate({
+                    "user_id":booking.user_id,
+                    "room_id":booking.room_id,
+                    "booked_num":booking.booked_num,
+                    "start_datetime":booking.start_datetime,
+                    "end_datetime":booking.end_datetime
+                })
+                session.add(db_booking)
+                session.commit()
+                session.refresh(db_booking)
+                return schemas.Booking.from_orm(db_booking)
+            
+            else:
+                raise HTTPException(status_code=404, detail="Already booked.")
+        ```
+
+        次の通り一覧が表示されたら成功！
+
+        - 定員を予約人数が超えた場合
+            ![image](imgs/varidate_1_booking.png)
+        - 開始時刻より終了時刻が早い場合
+            ![image](imgs/varidate_2_booking.png)
+        - 予約可能時間（9:00～20:00）を外れた場合
+            ![image](imgs/varidate_3_booking.png)
+        - 予約一覧と重複する場合
+            ![image](imgs/varidate_4_booking.png)
+        - 上記以外の場合
+            ![image](imgs/success_add_booking.png)
+        

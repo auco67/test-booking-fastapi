@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Query
+from fastapi import Query, HTTPException
 from .database import SessionDep
 from .models import User, Room, Booking
 from . import schemas
@@ -50,14 +50,26 @@ def create_user(user: schemas.UserBaseModel, session: SessionDep) -> schemas.Use
 
 # 予約作成
 def create_booking(booking: schemas.BookingBaseModel, session: SessionDep) -> schemas.Booking:
-    db_booking = Booking.model_validate({
-        "user_id":booking.user_id,
-        "room_id":booking.room_id,
-        "booked_num":booking.booked_num,
-        "start_datetime":booking.start_datetime,
-        "end_datetime":booking.end_datetime
-    })
-    session.add(db_booking)
-    session.commit()
-    session.refresh(db_booking)
-    return schemas.Booking.from_orm(db_booking)
+
+    db_booked = session.exec(
+        select(Booking). \
+        filter(Booking.room_id == booking.room_id). \
+        filter(Booking.end_datetime > booking.start_datetime). \
+        filter(Booking.start_datetime < booking.end_datetime) \
+    ).all()
+    
+    if len(db_booked) == 0:
+        db_booking = Booking.model_validate({
+            "user_id":booking.user_id,
+            "room_id":booking.room_id,
+            "booked_num":booking.booked_num,
+            "start_datetime":booking.start_datetime,
+            "end_datetime":booking.end_datetime
+        })
+        session.add(db_booking)
+        session.commit()
+        session.refresh(db_booking)
+        return schemas.Booking.from_orm(db_booking)
+    
+    else:
+        raise HTTPException(status_code=404, detail="Already booked.")

@@ -165,16 +165,23 @@ elif choice == "会議室予約":
             "end_datetime": end_datetime
         }
 
-        # 定員以下の予約人数の場合
-        if booked_num <= capacity:
+        # 定員以上の予約人数の場合
+        if booked_num > capacity:
+            st.error(f"{room_name}の定員{capacity}名以上では予約できません。")
 
+        # 開始時刻>=終了時刻の場合
+        elif start_time >= end_time:
+            st.error("終了時刻より開始時刻を遅く設定することはできません")
+
+        # 予約可能時間（9:00～20:00）を外れた場合
+        elif start_time < datetime.time(hour=9, minute=0, second=0) or end_time > datetime.time(hour=20, minute=0, second=0):
+            st.error("予約可能時間は9:00～20:00です")
+
+        else:
             # 会議室を予約する
             url = "http://127.0.0.1:8000/booking"
             res = requests.post(url, json=data)
             if res.status_code == 200:
                 st.success("会議室予約登録完了")
-            st.write(res.status_code)
-            st.json(res.json())
-        
-        else:
-            st.error(f"{room_name}の定員{capacity}名以上では予約できません。")
+            elif res.status_code == 404 and res.json()["detail"] == "Already booked.":
+                st.error("指定の時間は既に予約がは存在します")
