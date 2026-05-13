@@ -7,35 +7,71 @@ import pandas as pd
 url_users = "http://127.0.0.1:8000/users"
 res = requests.get(url_users)
 users = res.json()
-
-users_dict = {}
-for user in users:
-    users_dict[user["user_name"]] = user["user_id"]
-
 df_user = pd.DataFrame(users)
 df_user.columns = ["ユーザー名","ユーザーID"]
+
+# Dict型設定（Key：ユーザー名、value:ユーザーID）
+dt_users_name = {}
+for user in users:
+    dt_users_name[user["user_name"]] = user["user_id"]
+
+# Dict型設定（Key：ユーザーID、value:ユーザー名）
+dt_users_id = {}
+for user in users:
+    dt_users_id[user["user_id"]] = user["user_name"]
 
 # 会議室一覧取得
 url_rooms = "http://127.0.0.1:8000/rooms"
 res = requests.get(url_rooms)
 rooms = res.json()
+df_room = pd.DataFrame(rooms)
+df_room.columns = ["会議名","定員","会議室ID"]
 
-rooms_dict = {}
+#Dict型設定（Key:会議室名、value:会議室ID）
+dt_rooms_name = {}
 for room in rooms:
-    rooms_dict[room["room_name"]] = {
+    dt_rooms_name[room["room_name"]] = {
         "room_id":room["room_id"],
         "capacity":room["capacity"]
     }
-df_room = pd.DataFrame(rooms)
-df_room.columns = ["会議名","定員","会議室ID"]
+
+#Dict型設定（Key:会議室ID、value:会議室名）
+dt_rooms_id = {}
+for room in rooms:
+    dt_rooms_id[room["room_id"]] = {
+        "room_name":room["room_name"],
+        "capacity":room["capacity"]
+    }
 
 # 会議室予約一覧取得
 url_bookings = "http://127.0.0.1:8000/bookings"
 res = requests.get(url_bookings)
 bookings = res.json()
 
-df_booking = pd.DataFrame(bookings)
-df_booking.columns = ["ユーザID","会議室ID","予約人数","開始時刻","終了時刻","予約ID"]
+df_bookings = pd.DataFrame(bookings)
+
+# df_bookingsのIDをNAMEに、ISO形式文字列をdatetime型に変換する関数を設定する
+to_user_name = lambda x: dt_users_id[x]
+to_room_name = lambda x: dt_rooms_id[x]["room_name"]
+to_datetime = lambda x: datetime.datetime.fromisoformat(x).strftime("%Y/%m%d %H:%M")
+
+# df_bookingsに適用
+df_bookings["user_id"] = df_bookings["user_id"].map(to_user_name)
+df_bookings["room_id"] = df_bookings["room_id"].map(to_room_name)
+df_bookings["start_datetime"] = df_bookings["start_datetime"].map(to_datetime)
+df_bookings["end_datetime"] = df_bookings["end_datetime"].map(to_datetime)
+
+# カラム名を変更
+df_bookings = df_bookings.rename(
+    columns={
+        "user_id":"ユーザー名",
+        "room_id":"会議室名",
+        "booked_num":"予約人数",
+        "start_datetime":"開始時刻",
+        "end_datetime":"終了時刻",
+        "booking_id":"予約ID"
+    }
+)
 
 choice = st.sidebar.radio("選択", ["ユーザー","会議室","会議室予約"])
 
@@ -90,11 +126,11 @@ elif choice == "会議室":
 elif choice == "会議室予約":
 
     st.title("会議室予約画面")
-    st.dataframe(data=df_booking)
+    st.dataframe(data=df_bookings)
 
     with st.form(key="room"):
-        user_name: str = st.selectbox("予約者名",users_dict.keys())
-        room_name: str = st.selectbox("会議室名",rooms_dict.keys())
+        user_name: str = st.selectbox("予約者名",dt_users_name.keys())
+        room_name: str = st.selectbox("会議室名",dt_rooms_name.keys())
         booked_num: int = st.number_input(label="予約人数",step=1, min_value=1)
         date = st.date_input(label="日付", min_value=datetime.datetime.today())
         start_time = st.time_input(label="開始時刻", value=datetime.time(hour=9,minute=0))
@@ -103,9 +139,9 @@ elif choice == "会議室予約":
 
     # 送信ボタン押下時
     if submit_button:
-        user_id: int = users_dict[user_name]
-        room_id: int = rooms_dict[room_name]["room_id"]
-        capacity: int = rooms_dict[room_name]["capacity"]
+        user_id: int = dt_users_name[user_name]
+        room_id: int = dt_rooms_name[room_name]["room_id"]
+        capacity: int = dt_rooms_name[room_name]["capacity"]
         start_datetime = datetime.datetime(
             year=date.year,
             month=date.month,
