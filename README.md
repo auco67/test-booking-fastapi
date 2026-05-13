@@ -321,7 +321,7 @@ elif choice == "予約":
             offset: int=0, 
             limit: Annotated[int,Query(le=100)]= 100,
         ) -> list[schemas.User]:
-        users = session.exec(select(schemas.User).offset(offset).limit(limit)).all()
+        users = session.exec(select(User).offset(offset).limit(limit)).all()
         return users
 
     # 会議室一覧取得
@@ -330,7 +330,7 @@ elif choice == "予約":
             offset: int=0, 
             limit: Annotated[int,Query(le=100)]= 100,
             ) -> list[schemas.Room]:
-            rooms = session.exec(select(schemas.Room).offset(offset).limit(limit)).all()
+            rooms = session.exec(select(Room).offset(offset).limit(limit)).all()
             return rooms
 
     # 予約一覧取得
@@ -339,7 +339,7 @@ elif choice == "予約":
             offset: int=0, 
             limit: Annotated[int,Query(le=100)]= 100,
             ) -> list[schemas.Booking]:
-            bookings = session.exec(select(schemas.Booking).offset(offset).limit(limit)).all()
+            bookings = session.exec(select(Booking).offset(offset).limit(limit)).all()
             return bookings
     ```
 
@@ -360,7 +360,7 @@ elif choice == "予約":
             offset: int=0, 
             limit: Annotated[int,Query(le=100)]= 100,
         ) -> list[schemas.User]:
-        users = session.exec(select(schemas.User).offset(offset).limit(limit)).all()
+        users = session.exec(select(User).offset(offset).limit(limit)).all()
         return users
 
     # 会議室一覧取得
@@ -369,7 +369,7 @@ elif choice == "予約":
             offset: int=0, 
             limit: Annotated[int,Query(le=100)]= 100,
             ) -> list[schemas.Room]:
-            rooms = session.exec(select(schemas.Room).offset(offset).limit(limit)).all()
+            rooms = session.exec(select(Room).offset(offset).limit(limit)).all()
             return rooms
 
     # 予約一覧取得
@@ -378,7 +378,7 @@ elif choice == "予約":
             offset: int=0, 
             limit: Annotated[int,Query(le=100)]= 100,
             ) -> list[schemas.Booking]:
-            bookings = session.exec(select(schemas.Booking).offset(offset).limit(limit)).all()
+            bookings = session.exec(select(Booking).offset(offset).limit(limit)).all()
             return bookings
 
     # 会議室作成
@@ -436,11 +436,11 @@ elif choice == "予約":
     async def read_users(session:SessionDep,offset: int=0, limit: int=100):
         return crud.read_users(session=session, offset=offset, limit=limit)
 
-    @app.get("/rooms/", response_model=List[Room])
+    @app.get("/rooms", response_model=List[Room])
     async def read_rooms(session:SessionDep, offset: int=0, limit: int=100):
         return crud.read_rooms(session=session, offset=offset, limit=limit)
 
-    @app.get("/bookings/", response_model=List[Booking])
+    @app.get("/bookings", response_model=List[Booking])
     async def read_bookings(session:SessionDep, offset: int=0, limit: int=100):
         return crud.read_bookings(session=session, offset=offset, limit=limit)
 
@@ -511,5 +511,17 @@ elif choice == "予約":
 
 8. 新しくターミナルを起動し画面をユーザー登録する
 
-    次の通り表示されれば登録完了！
+    次の通り返ってきたら成功！
+    ```
+    2026-05-13 11:34:21.857 Uvicorn server started on 0.0.0.0:8501
+
+    You can now view your Streamlit app in your browser.
+
+    Local URL: http://localhost:8501
+    Network URL: http://192.168.10.6:8501
+
+    Stopping...
+    ```
+
+    次の通り登録できれば成功！
     ![images](imgs/create_user.png)

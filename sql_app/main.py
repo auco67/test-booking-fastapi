@@ -19,11 +19,11 @@ Read
 async def read_users(session:SessionDep,offset: int=0, limit: int=100):
     return crud.read_users(session=session, offset=offset, limit=limit)
 
-@app.get("/rooms/", response_model=List[Room])
+@app.get("/rooms", response_model=List[Room])
 async def read_rooms(session:SessionDep, offset: int=0, limit: int=100):
     return crud.read_rooms(session=session, offset=offset, limit=limit)
 
-@app.get("/bookings/", response_model=List[Booking])
+@app.get("/bookings", response_model=List[Booking])
 async def read_bookings(session:SessionDep, offset: int=0, limit: int=100):
     return crud.read_bookings(session=session, offset=offset, limit=limit)
 

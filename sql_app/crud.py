@@ -11,7 +11,7 @@ def read_users(
         offset: int=0, 
         limit: Annotated[int,Query(le=100)]= 100,
     ) -> list[schemas.User]:
-    users = session.exec(select(schemas.User).offset(offset).limit(limit)).all()
+    users = session.exec(select(User).offset(offset).limit(limit)).all()
     return users
 
 # 会議室一覧取得
@@ -20,7 +20,7 @@ def read_rooms(
         offset: int=0, 
         limit: Annotated[int,Query(le=100)]= 100,
         ) -> list[schemas.Room]:
-        rooms = session.exec(select(schemas.Room).offset(offset).limit(limit)).all()
+        rooms = session.exec(select(Room).offset(offset).limit(limit)).all()
         return rooms
 
 # 予約一覧取得
@@ -29,7 +29,7 @@ def read_bookings(
         offset: int=0, 
         limit: Annotated[int,Query(le=100)]= 100,
         ) -> list[schemas.Booking]:
-        bookings = session.exec(select(schemas.Booking).offset(offset).limit(limit)).all()
+        bookings = session.exec(select(Booking).offset(offset).limit(limit)).all()
         return bookings
 
 # 会議室作成
