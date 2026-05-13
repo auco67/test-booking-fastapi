@@ -1,19 +1,31 @@
 import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
-class Booking(BaseModel):
-    booking_id: int
+class BookingBaseModel(BaseModel):
     user_id: int
     room_id: int
     booked_num: int
     start_datetime: datetime.datetime
     end_datetime: datetime.datetime
 
-class User(BaseModel):
-    user_id: int
+class Booking(BookingBaseModel):
+    booking_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+class UserBaseModel(BaseModel):
     user_name: str = Field(max_length=12)
 
-class Room(BaseModel):
-    room_id: int
+class User(UserBaseModel):
+    user_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+class RoomBaseModel(BaseModel):
     room_name: str = Field(max_length=12)
     capacity: int
+
+class Room(RoomBaseModel):
+    room_id: int
+
+    model_config = ConfigDict(from_attributes=True)

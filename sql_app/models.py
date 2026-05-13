@@ -5,14 +5,14 @@ class User(SQLModel, table=True):
     user_id: int | None = Field(default=None, primary_key=True)
     user_name: str = Field(max_length=12)
 
-    booking: list["User"] = Relationship(back_populates="user", cascade_delete=True)
+    booking: list["Booking"] = Relationship(back_populates="user")
 
 class Room(SQLModel, table=True):
     room_id: int | None = Field(default=None, primary_key=True)
     room_name: str = Field(max_length=12)
     capacity: int
 
-    booking: list["Room"] = Relationship(back_populates="room", cascade_delete=True)
+    booking: list["Booking"] = Relationship(back_populates="room")
 
 
 class Booking(SQLModel, table=True):
@@ -22,3 +22,6 @@ class Booking(SQLModel, table=True):
     booked_num: int
     start_datetime: datetime.datetime
     end_datetime: datetime.datetime
+
+    user: User = Relationship(back_populates="booking")
+    room: Room = Relationship(back_populates="booking")

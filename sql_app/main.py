@@ -1,7 +1,7 @@
 from typing import List
 from sqlmodel import SQLModel
 from fastapi import FastAPI
-from .schemas import User, Room, Booking
+from .schemas import UserBaseModel,User, RoomBaseModel,Room, BookingBaseModel,Booking
 from .database import engine, SessionDep
 from . import crud
 
@@ -32,13 +32,13 @@ Create
     データを作成する
 """
 @app.post("/user", response_model=User)
-async def create_user(user: User,session:SessionDep):
+async def create_user(user: UserBaseModel,session:SessionDep):
     return crud.create_user(user=user, session=session)
 
 @app.post("/room", response_model=Room)
-async def create_room(room: Room, session:SessionDep):
+async def create_room(room: RoomBaseModel, session:SessionDep):
     return crud.create_room(room=room, session=session)
 
 @app.post("/booking", response_model=Booking)
-async def create_booking(booking: Booking,session:SessionDep):
+async def create_booking(booking: BookingBaseModel,session:SessionDep):
     return crud.create_booking(booking=booking, session=session)

@@ -33,20 +33,20 @@ def read_bookings(
         return bookings
 
 # 会議室作成
-def create_room(room: Room, session: SessionDep) -> Room:
-    db_room = Room(room_name=room.room_name)
+def create_room(room: schemas.RoomBaseModel, session: SessionDep) -> schemas.Room:
+    db_room = Room.model_validate({"room_name": room.room_name, "capacity": room.capacity})
     session.add(db_room)
     session.commit()
     session.refresh(db_room)
-    return db_room
+    return schemas.Room.from_orm(db_room)
 
 # ユーザー作成
-def create_user(user: User, session: SessionDep) -> User:
-    db_user = User(user_name=user.user_name)
+def create_user(user: schemas.UserBaseModel, session: SessionDep) -> schemas.User:
+    db_user = User.model_validate({"user_name": user.user_name})
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
-    return db_user
+    return schemas.User.from_orm(db_user)
 
 # 予約作成
 def create_booking(booking: Booking, session: SessionDep) -> Booking:

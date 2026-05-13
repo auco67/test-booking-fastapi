@@ -245,14 +245,14 @@ elif choice == "予約":
         user_id: int | None = Field(default=None, primary_key=True)
         user_name: str = Field(max_length=12)
 
-        booking: list["User"] = Relationship(back_populates="user", cascade_delete=True)
+        booking: list["Booking"] = Relationship(back_populates="user")
 
     class Room(SQLModel, table=True):
         room_id: int | None = Field(default=None, primary_key=True)
         room_name: str = Field(max_length=12)
         capacity: int
 
-        booking: list["Room"] = Relationship(back_populates="room", cascade_delete=True)
+        booking: list["Booking"] = Relationship(back_populates="room")
 
 
     class Booking(SQLModel, table=True):
@@ -262,30 +262,46 @@ elif choice == "予約":
         booked_num: int
         start_datetime: datetime.datetime
         end_datetime: datetime.datetime
+
+        user: User = Relationship(back_populates="booking")
+        room: Room = Relationship(back_populates="booking")
     ```
+
 3. `main.py`で記述した`User`、`Room`、`Booking`クラスを`sql_app\schemas.py`に移動する
 
     sql_app\schemas.py
     ```
     import datetime
-    from pydantic import BaseModel, Field
+    from pydantic import BaseModel, Field, ConfigDict
 
-    class Booking(BaseModel):
-        booking_id: int
+    class BookingBaseModel(BaseModel):
         user_id: int
         room_id: int
         booked_num: int
         start_datetime: datetime.datetime
         end_datetime: datetime.datetime
 
-    class User(BaseModel):
-        user_id: int
+    class Booking(BookingBaseModel):
+        booking_id: int
+
+        model_config = ConfigDict(from_attributes=True)
+
+    class UserBaseModel(BaseModel):
         user_name: str = Field(max_length=12)
 
-    class Room(BaseModel):
-        room_id: int
+    class User(UserBaseModel):
+        user_id: int
+
+        model_config = ConfigDict(from_attributes=True)
+
+    class RoomBaseModel(BaseModel):
         room_name: str = Field(max_length=12)
         capacity: int
+
+    class Room(RoomBaseModel):
+        room_id: int
+
+        model_config = ConfigDict(from_attributes=True)
     ```
 
 4. `sql_app\crud.py`で各テーブル一覧を取得する関数を用意する
@@ -366,20 +382,20 @@ elif choice == "予約":
             return bookings
 
     # 会議室作成
-    def create_room(room: Room, session: SessionDep) -> Room:
-        db_room = Room(room_name=room.room_name)
+    def create_room(room: schemas.RoomBaseModel, session: SessionDep) -> schemas.Room:
+        db_room = Room.model_validate({"room_name": room.room_name, "capacity": room.capacity})
         session.add(db_room)
         session.commit()
         session.refresh(db_room)
-        return db_room
+        return schemas.Room.from_orm(db_room)
 
     # ユーザー作成
-    def create_user(user: User, session: SessionDep) -> User:
-        db_user = User(user_name=user.user_name)
+    def create_user(user: schemas.UserBaseModel, session: SessionDep) -> schemas.User:
+        db_user = User.model_validate({"user_name": user.user_name})
         session.add(db_user)
         session.commit()
         session.refresh(db_user)
-        return db_user
+        return schemas.User.from_orm(db_user)
 
     # 予約作成
     def create_booking(booking: Booking, session: SessionDep) -> Booking:
@@ -402,7 +418,7 @@ elif choice == "予約":
     from typing import List
     from sqlmodel import SQLModel
     from fastapi import FastAPI
-    from .schemas import User, Room, Booking
+    from .schemas import UserBaseModel,User, RoomBaseModel,Room, BookingBaseModel,Booking
     from .database import engine, SessionDep
     from . import crud
 
@@ -433,15 +449,15 @@ elif choice == "予約":
         データを作成する
     """
     @app.post("/user", response_model=User)
-    async def create_user(user: User,session:SessionDep):
+    async def create_user(user: UserBaseModel,session:SessionDep):
         return crud.create_user(user=user, session=session)
 
     @app.post("/room", response_model=Room)
-    async def create_room(room: Room, session:SessionDep):
+    async def create_room(room: RoomBaseModel, session:SessionDep):
         return crud.create_room(room=room, session=session)
 
     @app.post("/booking", response_model=Booking)
-    async def create_booking(booking: Booking,session:SessionDep):
+    async def create_booking(booking: BookingBaseModel,session:SessionDep):
         return crud.create_booking(booking=booking, session=session)
     ```
 
@@ -490,3 +506,10 @@ elif choice == "予約":
       INFO   Waiting for application startup.
       INFO   Application startup complete.
     ```
+
+    ※`database.db`が生成されていることも確認する
+
+8. 新しくターミナルを起動し画面をユーザー登録する
+
+    次の通り表示されれば登録完了！
+    ![images](imgs/create_user.png)
