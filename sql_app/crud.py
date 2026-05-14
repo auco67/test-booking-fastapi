@@ -6,7 +6,7 @@ from . import schemas
 from sqlmodel import select
 
 # ユーザー一覧取得
-def read_users(
+def get_users(
         session: SessionDep,
         offset: int=0, 
         limit: Annotated[int,Query(le=100)]= 100,
@@ -15,7 +15,7 @@ def read_users(
     return users
 
 # 会議室一覧取得
-def read_rooms(
+def get_rooms(
         session: SessionDep,
         offset: int=0, 
         limit: Annotated[int,Query(le=100)]= 100,
@@ -24,7 +24,7 @@ def read_rooms(
         return rooms
 
 # 予約一覧取得
-def read_bookings(
+def get_bookings(
         session: SessionDep,
         offset: int=0, 
         limit: Annotated[int,Query(le=100)]= 100,
