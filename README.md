@@ -1,7 +1,21 @@
 # 会議室予約システムAPI
 [FastAPI](https://fastapi.tiangolo.com/ja/)と[Streamit](https://streamlit.io/)のフレームワークを用いて簡易的なWebサイトの会議室予約システムを構築する
 
+## 目次
+1. [環境構築](#01)
+1. [必要なパッケージ](#02)
+1. [SQLiteをPCにインストールする](#03)
+1. [第一章: FastAPI(モデル)作成](#04)
+1. [第一章: Streamlitでユーザー画面作成](#05)
+1. [第一章: 作成したFastAPIとStreamlitの画面を確認する](#06)
+1. [第二章: データベースを構築する](#07)
+
+<a id="01"></a>
+
 ## 環境構築
+
+<a id="02"></a>
+
 ### 必要なパッケージ
 - `FastAPI`
     ```
@@ -22,14 +36,17 @@
     pip freeze > requirements.txt
     ```
 
+<a id="03"></a>
+
 ### SQLiteをPCにインストールする
 1. [公式サイト](https://sqlite.org/download.html)からZIPファイルをダウンロードする
     `Precompiled Binaries for Windows`の`sqlite-tools-win-x64-3530100.zip`をダウンロードし、ZIP解凍後、`C:\Program Files\SQLite`直下にexeファイルを配置する
 2. 環境変数の`Path`に`C:\Program Files\SQLite`を登録する
 3. コマンドプロンプト起動し`sqlite3 --version`を実行し、問題なくバージョンが表示されればインストール完了！
 
-## 第一章
-### FastAPI(モデル)作成
+<a id="04"></a>
+
+## 第一章 FastAPI(モデル)作成
 
 main.py
 ```
@@ -72,6 +89,8 @@ async def room(room: Room):
 async def booking(booking: Booking):
     return { "booking": booking }
 ```
+
+<a id="05"></a>
 
 ### Streamlitでユーザー画面作成
 
@@ -174,6 +193,8 @@ elif choice == "予約":
         st.json(res.json())
 ```
 
+<a id="06"></a>
+
 ### 作成したFastAPIとStreamlitの画面を確認する
 
 1. ターミナルでサーバーを起動する
@@ -206,7 +227,10 @@ elif choice == "予約":
     サブメニューから`予約`を選択し、予約人数に`3`を、日付に`2026/05/12`を、開始時刻に`10:00`を、終了時刻に`11:00`を入力し送信ボタンを押下すると、送信データとレスポンス結果（200）が表示されれば成功！
     ![images](imgs/booking.png)
 
+<a id="07"></a>
+
 ## 第二章
+
 ### データベースを構築する
 
 1. データベースをSQLiteとする設定を用意する
